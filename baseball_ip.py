@@ -31,7 +31,7 @@ import pdb
 import team_map
 MIN_DECADE = 1920
 MAX_DECADE = 2010
-DATA_DIR = "../baseball_ip/kaggle/input/baseball-ip/"
+DATA_DIR = "../baseball-ip/kaggle/input/baseball-ip/"
 pd.options.display.width = 120
  
 batter_header = ['Id','Name',  'Dec', 'Pos', 'WARP', 'BA', 'OBP', 'SLG', 'H', 'HR', 'RBI', 'R', 'AB']
