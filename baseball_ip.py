@@ -32,6 +32,7 @@ import team_map
 MIN_DECADE = 1920
 MAX_DECADE = 2010
 DATA_DIR = "baseball-ip/kaggle/input/baseball-ip/"
+#DATA_DIR = "kaggle/input/baseball-ip/"
 pd.options.display.width = 120
  
 batter_header = ['Id','Name',  'Dec', 'Pos', 'WARP', 'BA', 'OBP', 'SLG', 'H', 'HR', 'RBI', 'R', 'AB']
@@ -67,7 +68,7 @@ pitcher_pos = ['RHP', 'LHP']
 def get_solution(ar, df):
     count = -1 
     picked_pitchers = pd.DataFrame()
-    picked_batters = pd.DataFrame() 
+    picked_batters = pd.DataFrame()
     for x in np.nditer(ar):
         count = count + 1
         if (np.abs(x)  < 0.01):
@@ -77,8 +78,10 @@ def get_solution(ar, df):
             picked_pitchers = picked_pitchers.append(player)
         else:
             picked_batters = picked_batters.append(player)
-    picked_pitchers = picked_pitchers.sort_values(by = 'YEAR', ascending = True)
-    picked_batters = picked_batters.sort_values(by = 'YEAR', ascending = True)
+    if (len(picked_pitchers) > 0):    #sort throws error if size == 0
+        picked_pitchers = picked_pitchers.sort_values(by = 'YEAR', ascending = True)
+    if (len(picked_batters) > 0):    #sort throws error if size == 0
+        picked_batters = picked_batters.sort_values(by = 'YEAR', ascending = True)
     return [get_team(picked_batters, False), get_team(picked_pitchers, True)]
 
 
@@ -173,7 +176,7 @@ def solve_ip(min_decade = MIN_DECADE, max_decade = MAX_DECADE, min_players_per_d
     if (problem.status not in ["infeasible", "infeasible_inaccurate", "unbounded"]):
         ret_val = [round(problem.value, 1)] + get_solution(selection.value, all_df)
     else:
-        ret_val = [0, 0,0]
+        raise Exception('Infeasible')
     return ret_val
 
 # %%
@@ -184,14 +187,17 @@ Now, let's use integer programming to pick and display the team with the highest
 # %%
 franchise = 'HOU'
 teams = [franchise] + team_map.team_map[franchise]
-[war, batting_team, pitching_team] = solve_ip(min_decade = 1910, max_decade = 2010, min_players_per_decade = 0, max_players_per_decade = 1,
+try: 
+    [war, batting_team, pitching_team] = solve_ip(min_decade = 1920, max_decade = 2010, min_players_per_decade = 0, max_players_per_decade = 1,
                                          players_per_position = 1, team = teams)
-print(batting_team)
-print("\n")
-print(pitching_team)
+    print(batting_team)
+    print("\n")
+    print(pitching_team)
 
-batting_json = batting_team.to_json(orient = 'records')
-print(json.dumps(batting_json, indent = 2))
-pitching_json = pitching_team.to_json(orient = 'records')
-print(json.dumps(batting_json, indent = 2))
-
+    batting_json = batting_team.to_json(orient = 'records')
+    print(json.dumps(batting_json, indent = 2))
+    pitching_json = pitching_team.to_json(orient = 'records')
+    print(json.dumps(batting_json, indent = 2))
+except Exception as exc:
+    print(exc)
+    print("Exception: Could not find a solution that satisfies the constraints")
