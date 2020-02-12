@@ -93,7 +93,6 @@ def print_top_players(positions, min_year = 1920, count = 10 ):
         pos_df = pos_df.sort_values(by="WARP", ascending = False)
         is_pitcher = pos in pitcher_pos
         print(get_team(pos_df.head(count), is_pitcher))
-
 # %%
 """
 Let's explore the data to see who the top players are at each position over the various decades.
@@ -101,7 +100,7 @@ Let's explore the data to see who the top players are at each position over the 
 
 # %%
 #explore the data    
-print_top_players(field_pos + pitcher_pos)
+#print_top_players(field_pos + pitcher_pos)
 
 
 # %%
@@ -111,19 +110,18 @@ Now let's create the constraints and the optimization function.
 
 # %%
 def solve_ip(min_decade = MIN_DECADE, max_decade = MAX_DECADE, min_players_per_decade = 0, max_players_per_decade = 1, players_per_position = 1,
-             team = []):
+             team = [], positions = field_pos + pitcher_pos):
     #initialize a dictionary of vectors to hold the position constraints
-    pos_list = {pos: [] for pos in field_pos + pitcher_pos}
+    pos_list = {pos: [] for pos in positions}
 
     #initialize a dictionary of vectors to hold the decade constraints
     decade_vec = {decade: []  for decade in range(min_decade, max_decade+1, 10)}
-
-
+    print(positions)
     WAR_vec = []
     all_df = pd.DataFrame()
 
     #loop through each position
-    for pos in field_pos + pitcher_pos:
+    for pos in positions:
         df = pd.read_csv(DATA_DIR + pos + ".csv")
 
         #remove players from decades too earlier than our first
@@ -135,6 +133,10 @@ def solve_ip(min_decade = MIN_DECADE, max_decade = MAX_DECADE, min_players_per_d
         if (len(team) > 0):
             df = df.loc[df['TEAM'].isin(team)]
 
+	
+        if ("BATTER" in df.columns.tolist()):
+             df = df[df['BATTER'] != 58809]
+        print(len(df))
         #create pos column on dataframe for easy printing
         df['POS'] = pos
 
@@ -144,7 +146,7 @@ def solve_ip(min_decade = MIN_DECADE, max_decade = MAX_DECADE, min_players_per_d
         ones = np.ones(len(df))
 
         #set the position vector
-        for pos_list_item in field_pos + pitcher_pos:
+        for pos_list_item in positions:
             if (pos == pos_list_item):
                 pos_list[pos_list_item].extend(ones)
             else:
@@ -162,7 +164,7 @@ def solve_ip(min_decade = MIN_DECADE, max_decade = MAX_DECADE, min_players_per_d
 
     selection = cp.Variable(len(WAR_vec), boolean = True)
     constraints = [(decade_vec[i] * selection <= max_players_per_decade) for i in range(min_decade, max_decade + 1, 10)] +  [(decade_vec[i] * selection >= min_players_per_decade) for i in range(min_decade, max_decade + 1, 10)]
-    for pos in field_pos + pitcher_pos:
+    for pos in positions:
         max_players = players_per_position
         if (pos == 'OF'):
             max_players = 3 * players_per_position
@@ -185,11 +187,11 @@ Now, let's use integer programming to pick and display the team with the highest
 """
 
 # %%
-franchise = 'HOU'
+franchise = 'NYY'
 teams = [franchise] + team_map.team_map[franchise]
 try: 
     [war, batting_team, pitching_team] = solve_ip(min_decade = 1920, max_decade = 2010, min_players_per_decade = 0, max_players_per_decade = 1,
-                                         players_per_position = 1, team = teams)
+                                         players_per_position = 1, team = teams, positions = ['SS'])
     print(batting_team)
     print("\n")
     print(pitching_team)
