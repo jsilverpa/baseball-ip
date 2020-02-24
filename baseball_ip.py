@@ -172,7 +172,8 @@ def solve_ip(min_decade = MIN_DECADE, max_decade = MAX_DECADE, min_players_per_d
     
     WAR = WAR_vec * selection
     problem = cp.Problem(cp.Maximize(WAR), constraints)
-    problem.solve()
+    print (cp.installed_solvers())
+    problem.solve(solver=cp.ECOS_BB, mi_max_iters=5)
     print("***********value is {}".format(problem.value)) 
     all_df = all_df.reset_index(drop=True)
     if (problem.status not in ["infeasible", "infeasible_inaccurate", "unbounded"]):
