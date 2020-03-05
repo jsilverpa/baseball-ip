@@ -20,13 +20,13 @@ team_map = {"ARI" : [],
             "OAK": ["KCA", "PHA"],
             "PHI": [],
             "PIT": [],
-            "SDP": [],
-            "SFG": ["NYG"],
+            "SD": ["SDP"],
+            "SF": ["SFG", "NYG"],
             "SEA": [],
             "STL": [],
-            "TBD": ["TBR"],
+            "TB": ["TBD", "TBR"],
             "TEX": ["WSA"],
             "TOR": [],
-            "WSN" : ["MON"]
+            "WAS" : ["WSN", "MON"]
             }
 
